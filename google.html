@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8' />
+  </head>
+  <body>
+	<button id="customButton" style="visibility: hidden">google</button>
+	
+    <script type="text/javascript" src="jquery.js"></script>
+    <script type="text/javascript">
+    
+      var clientId = '10763497660-n25qv35f5iv6p6875uqo9qdm81j52gk3.apps.googleusercontent.com';
+      var scopes = ['https://www.googleapis.com/auth/plus.me','https://www.googleapis.com/auth/calendar'];
+
+      var apiKey = 'hYnfrTI5A8FJSlC5ujkp6puk';
+
+      
+      var start_time = new Date();			//取得開始時間
+      var timeMin = start_time;
+      
+      //読み込み時の処理
+      function handleClientLoad() {
+        gapi.client.setApiKey(apiKey);
+        window.setTimeout(checkAuth,1);
+      }
+
+      //ログイン状態の判定
+      function checkAuth() {
+        gapi.auth.authorize({client_id: clientId, scope: scopes, immediate: true}, handleAuthResult);
+      }
+
+	//ログイン状態による処理
+      function handleAuthResult(authResult) {
+        var customButton = document.getElementById('customButton');
+        //ログイン時の処理
+        if (authResult && !authResult.error) {
+          customButton.style.visibility = 'hidden';
+          get_event_lists();
+          //非ログイン時の処理
+        } else {
+          customButton.style.visibility = '';
+          customButton.onclick = handleAuthClick;
+          
+        }
+      }
+	
+	//ログインボタンクリック時のイベント
+      function handleAuthClick(event) {
+        gapi.auth.authorize({client_id: clientId, scope: scopes, immediate: false}, handleAuthResult);
+        return false;
+      }
+	
+      //カレンダーからリストの取得
+      function get_event_lists(){
+      	  var Request = gapi.client.request({
+      		  'path' : '/calendar/v3/calendars/primary/events',
+      		  'params' : {
+      			  'timeMin' : timeMin
+      			  }
+      	  });
+      	  Request.execute(function(event_lists){});
+       }
+      
+      //カレンダーへの予定の追加
+      function put_event(){
+    	  
+		var Request = gapi.client.request({
+			'path' : '/calendar/v3/calendars/primary/events',
+			'method' : 'post',
+			'sendNotifications' : 'false',
+			'body' : {
+				'attendees' : {
+					'email' : 'free_now??'
+				},
+				'start' : {
+					'dateTime' : start
+				},
+				'end'	: {
+					'dateTime' : end
+				},
+				'reminders' : 
+				{
+					'overrides' : 
+					{
+						'method' : 'popup',
+						'minutes' : '15'
+					}
+				},
+				'source' : {
+					'url' : url
+				},
+				'location' : location,
+				'summary' : summary
+			}
+		});
+      }
+      
+    </script>
+    <script src="https://apis.google.com/js/client.js?onload=handleClientLoad"></script>
+
+  </body>
+</html>
